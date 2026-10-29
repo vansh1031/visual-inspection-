@@ -1,0 +1,5 @@
+flask>=2.3
+opencv-contrib-python>=4.8   # also what MediaPipe uses; avoid installing opencv-python next to it
+mediapipe>=0.10.30
+numpy
+pyserial

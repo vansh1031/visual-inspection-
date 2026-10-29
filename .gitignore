@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.swp
+.venv/
+logs/
+config/settings.json
+.run.json
+.make_shortcut.ps1
+assets/hazard_detector.ico

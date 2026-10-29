@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hazard Zone Detector</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2z' fill='%23ef4444'/%3E%3Cpath d='M11 9h2v6h-2zm0 8h2v2h-2z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="booting">
+
+  <!-- Boot splash -->
+  <div class="splash" id="splash">
+    <div class="splash-inner">
+      <img src="/logo.svg" alt="YASH Technologies" class="splash-logo">
+      <div class="splash-title">Hazardous Zone Detector</div>
+      <div class="splash-bar"><span></span></div>
+      <div class="splash-sub" id="splashSub">Starting detectors…</div>
+    </div>
+  </div>
+
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/logo.svg" alt="YASH Technologies" class="brand-logo">
+      <div class="brand-text">
+        <h1>Hazardous Zone Detector</h1>
+        <p>Real-time AI safety monitoring</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="segmented" id="sourceSwitch" role="tablist" aria-label="Video source">
+        <button data-source="camera" role="tab">
+          <svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          Camera
+        </button>
+        <button data-source="simulator" role="tab">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          Simulator
+        </button>
+      </div>
+      <div class="pill" id="serialPill" title="Arduino buzzer link">
+        <span class="dot"></span><span class="pill-label">Arduino</span><span class="pill-value" id="serialText">—</span>
+      </div>
+      <div class="pill mono" id="clock">--:--:--</div>
+      <button class="icon-btn" id="soundBtn" title="Alarm sound in this browser">
+        <svg viewBox="0 0 24 24" class="ico-on"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+        <svg viewBox="0 0 24 24" class="ico-off"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="m17 9 5 6m0-6-5 6"/></svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+      <button class="icon-btn" id="fullscreenBtn" title="Full screen">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Video stage -->
+    <section class="stage">
+      <div class="stage-wrap" id="stageWrap">
+        <div class="stage-frame" id="stageFrame">
+          <img id="video" alt="Live camera feed" draggable="false">
+          <canvas id="overlay"></canvas>
+
+          <div class="stage-banner" id="stageBanner">
+            <svg viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4m0 3v.01"/></svg>
+            <div>
+              <strong id="bannerTitle">HUMAN IN DANGER ZONE</strong>
+              <span id="bannerSub">Machine stopped</span>
+            </div>
+          </div>
+
+          <div class="stage-tag" id="stageTag"><span class="rec"></span><span id="stageTagText">LIVE</span></div>
+          <div class="stage-hint" id="stageHint"></div>
+
+          <div class="stage-offline" id="stageOffline">
+            <svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <strong>Monitoring is off</strong>
+            <button class="btn primary" data-action="start">Start monitoring</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="tool-group" id="viewTools">
+          <button class="btn primary" id="editZoneBtn">
+            <svg viewBox="0 0 24 24"><path d="M4 18 9 6l6 9 5-5"/><circle cx="4" cy="18" r="1.6"/><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="15" r="1.6"/><circle cx="20" cy="10" r="1.6"/></svg>
+            <span id="editZoneLabel">Draw zone</span>
+          </button>
+          <button class="btn ghost" id="clearZoneBtn">
+            <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset zone
+          </button>
+          <button class="btn ghost sim-only" id="autoWalkBtn">
+            <svg viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="m9 21 2-6 3 3v3M7 12l3-4 4 1 3 3M11 15l1-5"/></svg>
+            Auto walk
+          </button>
+        </div>
+
+        <div class="tool-group edit-tools" id="editTools">
+          <span class="edit-count" id="editCount">0 points</span>
+          <button class="btn ghost" id="undoBtn">
+            <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+            Undo
+          </button>
+          <button class="btn ghost" id="clearDraftBtn">Clear</button>
+          <button class="btn ghost" id="cancelEditBtn">Cancel</button>
+          <button class="btn success" id="saveZoneBtn">
+            <svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>
+            Arm zone
+          </button>
+        </div>
+
+        <div class="tool-group right">
+          <button class="btn" id="engineBtn" data-action="stop">
+            <svg viewBox="0 0 24 24" class="ico-stop"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+            <svg viewBox="0 0 24 24" class="ico-play"><path d="M7 5v14l12-7z"/></svg>
+            <span>Stop</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Side panel -->
+    <aside class="side">
+      <div class="card status-card" id="statusCard" data-status="connecting">
+        <div class="status-icon">
+          <span class="ring"></span><span class="ring r2"></span>
+          <svg viewBox="0 0 24 24" class="si si-safe"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+          <svg viewBox="0 0 24 24" class="si si-alarm"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4m0 3v.01"/></svg>
+          <svg viewBox="0 0 24 24" class="si si-idle"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>
+        </div>
+        <div class="status-text">
+          <div class="status-kicker" id="statusKicker">System</div>
+          <div class="status-title" id="statusTitle">Connecting…</div>
+          <div class="status-sub" id="statusSub">Waiting for the detector</div>
+        </div>
+      </div>
+
+      <div class="card machine-card">
+        <div class="card-head">
+          <h2>Machine simulator</h2>
+          <span class="badge" id="machineBadge">RUNNING</span>
+        </div>
+        <svg class="machine" id="machine" viewBox="0 0 360 170" aria-label="Machine simulator">
+          <defs>
+            <linearGradient id="mBody" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#3a4558"/><stop offset="1" stop-color="#232a37"/>
+            </linearGradient>
+            <linearGradient id="mRam" x1="0" x2="1">
+              <stop offset="0" stop-color="#8b97a8"/><stop offset=".5" stop-color="#d5dce6"/><stop offset="1" stop-color="#8b97a8"/>
+            </linearGradient>
+            <pattern id="hazard" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="7" height="14" fill="#f5b301"/><rect x="7" width="7" height="14" fill="#1b1f27"/>
+            </pattern>
+            <clipPath id="beltClip"><rect x="20" y="118" width="320" height="14" rx="7"/></clipPath>
+          </defs>
+
+          <!-- floor + hazard stripe -->
+          <rect x="0" y="150" width="360" height="20" fill="#151922"/>
+          <rect x="96" y="146" width="120" height="6" fill="url(#hazard)" opacity=".9"/>
+
+          <!-- stack light -->
+          <rect x="300" y="18" width="4" height="40" fill="#4b5563"/>
+          <rect x="292" y="58" width="20" height="8" rx="2" fill="#374151"/>
+          <circle id="lightR" cx="302" cy="12" r="7" class="lamp red"/>
+          <circle id="lightA" cx="302" cy="27" r="7" class="lamp amber"/>
+          <circle id="lightG" cx="302" cy="42" r="7" class="lamp green"/>
+
+          <!-- press frame -->
+          <rect x="106" y="14" width="100" height="22" rx="4" fill="url(#mBody)" stroke="#4b5871"/>
+          <rect x="112" y="36" width="10" height="80" fill="#2b3342"/>
+          <rect x="190" y="36" width="10" height="80" fill="#2b3342"/>
+          <g id="ram">
+            <rect x="146" y="30" width="20" height="40" fill="url(#mRam)"/>
+            <rect x="132" y="68" width="48" height="12" rx="2" fill="#5d6b82" stroke="#7c8aa2"/>
+          </g>
+          <rect x="126" y="108" width="60" height="8" rx="2" fill="#475266"/>
+
+          <!-- gear -->
+          <g transform="translate(60 60)">
+            <g id="gear">
+              <path d="M-4-26h8l2 7 6 3 6-4 6 6-4 6 3 6 7 2v8l-7 2-3 6 4 6-6 6-6-4-6 3-2 7h-8l-2-7-6-3-6 4-6-6 4-6-3-6-7-2v-8l7-2 3-6-4-6 6-6 6 4 6-3z" fill="#4b5871" stroke="#6b7a94"/>
+              <circle r="8" fill="#1b2130" stroke="#6b7a94"/>
+            </g>
+          </g>
+
+          <!-- conveyor -->
+          <rect x="16" y="114" width="328" height="22" rx="11" fill="#1d2330" stroke="#3a4558"/>
+          <g clip-path="url(#beltClip)">
+            <rect x="20" y="118" width="320" height="14" fill="#2a3140"/>
+            <g id="beltStripes"></g>
+          </g>
+          <g id="rollers"></g>
+          <g id="crates"></g>
+
+          <!-- E-STOP overlay -->
+          <g id="estop" class="estop">
+            <rect x="90" y="56" width="180" height="36" rx="8"/>
+            <text x="180" y="80" text-anchor="middle">EMERGENCY STOP</text>
+          </g>
+        </svg>
+        <div class="machine-meta">
+          <div><span class="meta-label">Speed</span><span class="meta-value mono" id="rpm">0 rpm</span></div>
+          <div class="speed-bar"><span id="speedFill"></span></div>
+          <div><span class="meta-label">Parts made</span><span class="meta-value mono" id="parts">0</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Detection</h2><span class="muted mono" id="fps">0 fps</span></div>
+        <div class="detect-grid">
+          <div class="detect" data-kind="hand">
+            <svg viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11m0-6.5a1.5 1.5 0 0 1 3 0V11m0-5a1.5 1.5 0 0 1 3 0v7.5a7 7 0 0 1-12.6 4.2L3.3 15a1.6 1.6 0 0 1 2.4-2l2.3 2"/></svg>
+            <span class="detect-name">Hand</span><span class="detect-state">—</span>
+          </div>
+          <div class="detect" data-kind="face">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5h.01M15 9.5h.01"/></svg>
+            <span class="detect-name">Face</span><span class="detect-state">—</span>
+          </div>
+          <div class="detect" data-kind="body">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.5"/><path d="M12 7v7m0 0-3 7m3-7 3 7M6 10l6-2 6 2"/></svg>
+            <span class="detect-name">Body</span><span class="detect-state">—</span>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="stat-value mono" id="statAlarms">0</span><span class="stat-label">Alarms</span></div>
+          <div class="stat"><span class="stat-value mono" id="statLast">—</span><span class="stat-label">Last alarm</span></div>
+          <div class="stat"><span class="stat-value mono" id="statAlarmTime">0s</span><span class="stat-label">Stopped</span></div>
+          <div class="stat"><span class="stat-value mono" id="statUptime">0s</span><span class="stat-label">Uptime</span></div>
+        </div>
+      </div>
+
+      <div class="card log-card">
+        <div class="card-head"><h2>Event log</h2><button class="link" id="clearLogBtn">Clear</button></div>
+        <ol class="log" id="log"></ol>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Settings drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" id="drawer" aria-label="Settings">
+    <div class="drawer-head">
+      <h2>Settings</h2>
+      <button class="icon-btn" id="closeDrawerBtn" title="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <form id="settingsForm" class="drawer-body">
+      <fieldset>
+        <legend>Camera</legend>
+        <label>Camera index<input type="number" name="camera_index" min="0" max="9"></label>
+        <div class="row">
+          <label>Width<input type="number" name="width" min="320" max="3840" step="10"></label>
+          <label>Height<input type="number" name="height" min="240" max="2160" step="10"></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Arduino buzzer</legend>
+        <label>Serial port<select name="serial_port" id="portSelect"></select></label>
+        <label>Baud rate
+          <select name="baud">
+            <option>9600</option><option>19200</option><option>38400</option><option>57600</option><option>115200</option>
+          </select>
+        </label>
+        <button type="button" class="btn ghost full" id="testBuzzerBtn">Test buzzer (1 s)</button>
+      </fieldset>
+      <fieldset>
+        <legend>Detection</legend>
+        <label>Hand confidence <output id="handConfOut"></output><input type="range" name="hand_conf" min="0.3" max="0.95" step="0.05"></label>
+        <label>Face confidence <output id="faceConfOut"></output><input type="range" name="face_conf" min="0.3" max="0.95" step="0.05"></label>
+        <label>Grace frames <small>(clear frames before the buzzer stops)</small><input type="number" name="grace_frames" min="1" max="60"></label>
+        <label class="switch"><input type="checkbox" name="body_detection"><span></span>Body detection (HOG)</label>
+        <label class="switch"><input type="checkbox" name="fail_safe"><span></span>Fail-safe: stop the machine if the camera is lost</label>
+      </fieldset>
+    </form>
+    <div class="drawer-foot">
+      <button class="btn ghost" id="cancelSettingsBtn">Cancel</button>
+      <button class="btn primary" id="saveSettingsBtn">Save settings</button>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
